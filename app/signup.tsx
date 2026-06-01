@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Login() {
+export default function Signup() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -25,12 +25,24 @@ export default function Login() {
         />
 
         <View style={styles.textView}>
-          <Text style={styles.titleTxt}>SignIn</Text>
-          <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
+          <Text style={styles.titleTxt}>SignUp</Text>
+          <Text style={styles.descriptionTxt}>
+            Create an account to get started.
+          </Text>
         </View>
 
         <View style={styles.inputView}>
           <AntDesign name="user" size={20} color="#696969" />
+          <TextInput style={styles.input} placeholder="Enter your First Name" />
+        </View>
+
+        <View style={styles.inputView}>
+          <AntDesign name="user" size={20} color="#696969" />
+          <TextInput style={styles.input} placeholder="Enter your Last Name" />
+        </View>
+
+        <View style={styles.inputView}>
+          <AntDesign name="mobile1" size={20} color="#696969" />
           <TextInput
             style={styles.input}
             placeholder="Enter your Mobile"
@@ -48,16 +60,16 @@ export default function Login() {
         </View>
 
         <Pressable style={styles.btn}>
-          <Text style={styles.btnTxt}>Sign In</Text>
+          <Text style={styles.btnTxt}>Sign Up</Text>
         </Pressable>
 
         <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
-          <Text style={{ color: "#8b8b8b" }}>Don't have account?</Text>
+          <Text style={{ color: "#8b8b8b" }}>Already have an account?</Text>
           <Text
             style={{ fontWeight: "bold", fontSize: 15, color: "#0066ff" }}
-            onPress={() => router.push("/signup")}
+            onPress={() => router.back()}
           >
-            Sign Up
+            Sign In
           </Text>
         </View>
       </ScrollView>
@@ -107,8 +119,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   img: {
-    width: 250,
-    height: 250,
+    width: 150,
+    height: 150,
     resizeMode: "contain",
   },
   input: {
