@@ -1,141 +1,128 @@
-import AntDesign from "@expo/vector-icons/AntDesign";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { router } from "expo-router";
-import Entypo from "@expo/vector-icons/Entypo";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useRouter } from 'expo-router';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Signup() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, gap: 18, alignItems: "center" }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Image
-            source={require("../assets/images/signup.jpg")}
-            style={styles.img}
-          />
 
-          <View style={styles.textView}>
-            <Text style={styles.titleTxt}>SignUp</Text>
-            <Text style={styles.descriptionTxt}>
-              Create an account to get started.
-            </Text>
-          </View>
+    
 
-          <View style={styles.inputView}>
-            <AntDesign name="user" size={20} color="#696969" />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your First Name"
-            />
-          </View>
+    const router = useRouter();
 
-          <View style={styles.inputView}>
-            <AntDesign name="user" size={20} color="#696969" />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Last Name"
-            />
-          </View>
+    return (
+        <SafeAreaView style={styles.container}>
 
-          <View style={styles.inputView}>
-            <Entypo name="mobile" size={24} color="black" />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Mobile"
-              keyboardType="phone-pad"
-            />
-          </View>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
 
-          <View style={styles.inputView}>
-            <MaterialIcons name="lock-outline" size={22} color="#696969" />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Password"
-              secureTextEntry
-            />
-          </View>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 18, padding:20, alignItems: "center" }}>
 
-          <Pressable style={styles.btn}>
-            <Text style={styles.btnTxt}>Sign Up</Text>
-          </Pressable>
+                    <Image
+                        source={require("../assets/images/bg-signup.jpg")}
+                        style={styles.img}
 
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
-            <Text style={{ color: "#8b8b8b" }}>Already have an account?</Text>
-            <Text
-              style={{ fontWeight: "bold", fontSize: 15, color: "#0066ff" }}
-              onPress={() => router.back()}
-            >
-              Sign In
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+                    />
+
+                    <View style={styles.textView}>
+                        <Text style={styles.titleTxt}>Register</Text>
+                        <Text style={styles.descriptionTxt}>Please register to login.</Text>
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your First Name' />
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Last Name' />
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Mobile' />
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <MaterialIcons name="lock-outline" size={22} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Password' />
+                    </View>
+
+                    <Pressable style={styles.btn}>
+                        <Text style={styles.btnTxt}>Sign Up</Text>
+                    </Pressable>
+
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                        <Text style={{ color: "#8b8b8b" }}>{"Don't have account?"}</Text>
+                        <Pressable style={{height:30}} onPress={()=>{
+                            router.back();
+                        }}>
+                            <Text style={{ fontWeight: "bold", fontSize: 15,}} >Sign In</Text>
+                        </Pressable>
+                    </View>
+
+                </ScrollView>
+
+            </KeyboardAvoidingView>
+
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  descriptionTxt: {
-    color: "#707070",
-    marginTop: 5,
-  },
-  titleTxt: {
-    fontWeight: "bold",
-    fontSize: 22,
-  },
-  textView: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  btnTxt: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  btn: {
-    backgroundColor: "#0066ff",
-    borderRadius: 50,
-    padding: 15,
-    width: "100%",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  inputView: {
-    width: "100%",
-    flexDirection: "row",
-    backgroundColor: "#ececec",
-    borderRadius: 50,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    alignItems: "center",
-    gap: 10,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-  },
-  img: {
-    width: 150,
-    height: 150,
-    resizeMode: "contain",
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-  },
+
+    descriptionTxt: {
+        color: "#707070",
+        marginTop: 5,
+    },
+
+    titleTxt: {
+        fontWeight: "bold",
+        fontSize: 22,
+    },
+
+    textView: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+
+    btnTxt: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    btn: {
+        backgroundColor: "#0066ff",
+        borderRadius: 50,
+        padding: 10,
+        width: "100%",
+        alignItems: "center",
+    },
+    inputView: {
+        width: "100%",
+        height: "auto",
+        flexDirection: "row",
+        backgroundColor: "#ececec",
+        borderRadius: 50,
+        paddingHorizontal: 18,
+        paddingVertical: 8,
+        justifyContent: "center",
+        gap: 5,
+    },
+
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+        alignItems: "center",
+        gap: 18,
+    },
+    img: {
+        width: "100%",
+        height: 250,
+
+    },
+    input: {
+        width: "90%",
+        padding: 5,
+    },
 });
