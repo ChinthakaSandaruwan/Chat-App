@@ -22,7 +22,7 @@ export default function Login() {
 
             try {
 
-                const response = await fetch("http://192.168.1.2:3000/user/login", {
+                const response = await fetch("http://192.168.1.12:3000/user/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -33,9 +33,9 @@ export default function Login() {
                     const data = await response.json();
                     console.log(data.user);
 
-                    await AsyncStorage.setItem("user", JSON.stringify(data.user) );
+                        await AsyncStorage.setItem("user", JSON.stringify(data.user) );
 
-                    alert("Login Success");
+                        alert("Login Success");
 
                 } else {
 
