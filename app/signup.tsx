@@ -36,7 +36,8 @@ export default function Signup() {
     };
 
     try {
-      const response = await fetch("http://192.168.1.12:3000/user/signup", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+      const response = await fetch(apiUrl+'/user/signup', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

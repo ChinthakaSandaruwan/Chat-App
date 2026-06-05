@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Login() {
 
+    const router = useRouter();
     const [mobile, setMobile] = useState("");
     const [password, setPassworde] = useState("");
 
@@ -21,8 +22,8 @@ export default function Login() {
             };
 
             try {
-
-                const response = await fetch("http://192.168.1.12:3000/user/login", {
+                const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+                const response = await fetch(apiUrl+'/user/login', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -35,7 +36,7 @@ export default function Login() {
 
                         await AsyncStorage.setItem("user", JSON.stringify(data.user) );
 
-                        alert("Login Success");
+                        router.replace("/home");
 
                 } else {
 
@@ -52,8 +53,6 @@ export default function Login() {
         }
 
     }
-
-    const router = useRouter();
 
     return (
         <SafeAreaView style={styles.container}>
