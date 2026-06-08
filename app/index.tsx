@@ -2,7 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,6 +11,23 @@ export default function Login() {
     const router = useRouter();
     const [mobile, setMobile] = useState("");
     const [password, setPassworde] = useState("");
+
+    const [isloading, setIsLoading] = useState(true);
+
+
+    useEffect(() => {
+        async function checkUser() {
+            const user = await AsyncStorage.getItem("user");
+            if (user) {
+                router.replace("/(tabs)/home");
+            } else {
+                setIsLoading(false);
+            }
+        }
+        checkUser();
+    }, []);
+
+
 
     async function signIn() {
 
@@ -23,7 +40,7 @@ export default function Login() {
 
             try {
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-                const response = await fetch(apiUrl+'/user/login', {
+                const response = await fetch(apiUrl + '/user/login', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -34,9 +51,9 @@ export default function Login() {
                     const data = await response.json();
                     console.log(data.user);
 
-                        await AsyncStorage.setItem("user", JSON.stringify(data.user) );
+                    await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
-                        router.replace("/home");
+                    router.replace("/home");
 
                 } else {
 
@@ -53,55 +70,58 @@ export default function Login() {
         }
 
     }
+    if (!isloading) {
 
-    return (
-        <SafeAreaView style={styles.container}>
 
-            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        return (
+            <SafeAreaView style={styles.container}>
 
-                <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 18, alignItems: "center" }}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
 
-                    <Image
-                        source={require("../assets/images/bg-signin.jpg")}
-                        style={styles.img}
-                    />
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 18, alignItems: "center" }}>
 
-                    <View style={styles.textView}>
-                        <Text style={styles.titleTxt}>SignIn</Text>
-                        <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
-                    </View>
+                        <Image
+                            source={require("../assets/images/bg-signin.jpg")}
+                            style={styles.img}
+                        />
 
-                    <View style={styles.inputView}>
-                        <AntDesign name="user-add" size={20} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your Mobile' onChangeText={setMobile} />
-                    </View>
+                        <View style={styles.textView}>
+                            <Text style={styles.titleTxt}>SignIn</Text>
+                            <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
+                        </View>
 
-                    <View style={styles.inputView}>
-                        <MaterialIcons name="lock-outline" size={22} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your Password' onChangeText={setPassworde} />
-                    </View>
+                        <View style={styles.inputView}>
+                            <AntDesign name="user-add" size={20} color="#696969" />
+                            <TextInput style={styles.input} placeholder='Enter your Mobile' onChangeText={setMobile} />
+                        </View>
 
-                    <Pressable style={styles.btn} onPress={() => {
-                        signIn();
-                    }}>
-                        <Text style={styles.btnTxt}>Sign In</Text>
-                    </Pressable>
+                        <View style={styles.inputView}>
+                            <MaterialIcons name="lock-outline" size={22} color="#696969" />
+                            <TextInput style={styles.input} placeholder='Enter your Password' onChangeText={setPassworde} />
+                        </View>
 
-                    <View style={{ flexDirection: "row", gap: 10 }}>
-                        <Text style={{ color: "#8b8b8b" }}>{"Don't have account?"}</Text>
-                        <Pressable style={{ height: 30 }} onPress={() => {
-                            router.push("/signup");
+                        <Pressable style={styles.btn} onPress={() => {
+                            signIn();
                         }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 15, }} >Sign Up</Text>
+                            <Text style={styles.btnTxt}>Sign In</Text>
                         </Pressable>
-                    </View>
 
-                </ScrollView>
+                        <View style={{ flexDirection: "row", gap: 10 }}>
+                            <Text style={{ color: "#8b8b8b" }}>{"Don't have account?"}</Text>
+                            <Pressable style={{ height: 30 }} onPress={() => {
+                                router.push("/signup");
+                            }}>
+                                <Text style={{ fontWeight: "bold", fontSize: 15, }} >Sign Up</Text>
+                            </Pressable>
+                        </View>
 
-            </KeyboardAvoidingView>
+                    </ScrollView>
 
-        </SafeAreaView>
-    );
+                </KeyboardAvoidingView>
+
+            </SafeAreaView>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
