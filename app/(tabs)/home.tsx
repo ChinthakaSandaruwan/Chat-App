@@ -1,20 +1,27 @@
 import Octicons from '@expo/vector-icons/Octicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 export default function Home() {
 
     const [chatData,setChatData] = useState();
+    const [isRefresh,setIsRefresh] = useState(false);
+    const [userName,setUserName] = useState("");
+    const [userMobile,setUserMobile] = useState("");
 
-    async function loadChats() {
+    async function loadChats(mobile :string) {
+
+        setIsRefresh(true);
 
         try {
 
             const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-            const response = await fetch(apiUrl + "/chat/get-chats?mobile=0713018095");
+            const response = await fetch(apiUrl + "/chat/get-chats?mobile="+mobile);
 
             const data = await response.json();
+            setIsRefresh(false);
 
             if (response.ok) {
 
@@ -32,15 +39,45 @@ export default function Home() {
     }
 
     useEffect(() => {
-        loadChats();
+
+        async function getUser(){
+
+            const userString = await AsyncStorage.getItem("user");
+
+            if(userString){
+
+                const userObj = JSON.parse(userString);
+                setUserName(userObj.fname);
+                setUserMobile(userObj.mobile);
+
+                loadChats(userObj.mobile);
+
+            }
+
+        }
+
+        getUser();
+  
     }, []);
+
+    function timeFormat(time :string){
+
+        const formattedTime = new Date(time).toLocaleTimeString("en-US",{
+            hour:"numeric",
+            minute:"2-digit",
+            hour12:true,
+        });
+
+        return formattedTime;
+
+    }
 
 
     return (
         <SafeAreaView style={styles.container}>
 
             <View style={styles.headerView}>
-                <Text style={{ fontSize: 18 }}>User Name</Text>
+                <Text style={{ fontSize: 18 }}>{userName}</Text>
                 <Octicons name="bell" size={20} color="#a1a1a1" />
             </View>
 
@@ -60,12 +97,19 @@ export default function Home() {
                             />
                             <View style={{ gap: 3 }}>
                                 <Text style={styles.nameTxt}>{item.user.fname +" "+ item.user.lname}</Text>
-                                <Text style={styles.msgTxt}>Hello😍</Text>
+                                <Text style={styles.msgTxt}>{item.last_message.message}</Text>
                             </View>
-                            <Text style={styles.time}>10:20 PM</Text>
+                            <Text style={styles.time}>{timeFormat(item.last_message.sent_at)}</Text>
                         </Pressable>
                     );
                 }}
+
+                refreshing={isRefresh}
+                onRefresh={()=>{ 
+                    if(userMobile){
+                        loadChats(userMobile);
+                    }
+                 }}
             />
 
 
