@@ -8,24 +8,37 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Login() {
 
-    const router = useRouter();
     const [mobile, setMobile] = useState("");
     const [password, setPassworde] = useState("");
 
-    const [isloading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
+    const router = useRouter();
 
     useEffect(() => {
+
         async function checkUser() {
+
             const user = await AsyncStorage.getItem("user");
+
             if (user) {
                 router.replace("/(tabs)/home");
             } else {
+
                 setIsLoading(false);
+
             }
+
+
         }
+
         checkUser();
+
     }, []);
+
+
+
+
 
 
 
@@ -39,8 +52,10 @@ export default function Login() {
             };
 
             try {
+
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-                const response = await fetch(apiUrl + '/user/login', {
+
+                const response = await fetch(apiUrl + "/user/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -53,7 +68,7 @@ export default function Login() {
 
                     await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
-                    router.replace("/home");
+                    router.push("/(tabs)/home");
 
                 } else {
 
@@ -70,8 +85,9 @@ export default function Login() {
         }
 
     }
-    if (!isloading) {
 
+
+    if (!isLoading) {
 
         return (
             <SafeAreaView style={styles.container}>
@@ -121,7 +137,9 @@ export default function Login() {
 
             </SafeAreaView>
         );
+
     }
+
 }
 
 const styles = StyleSheet.create({

@@ -1,186 +1,266 @@
-import { View, Text, StyleSheet, Image, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Chat() {
+
+    const [chatHistory, setChatHistory] = useState<any[]>([]);
+    const [userName, setUserName] = useState("");
+
+    const [text, setText] = useState("");
+
+    const webSocket = useRef<WebSocket>(null);
+
+    const router = useRouter();
+    const params = useLocalSearchParams();
+    const chatId = params.chatId;
+    const userMobile = params.userMobile;
+
+
+    useEffect(() => {
+
+        setUserName(params.userName + "");
+
+        loadChatHistory();
+        connectWebSocket();
+
+    }, []);
+
+    async function loadChatHistory() {
+
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
+        const response = await fetch(apiUrl + "/chat-history/get-chat-history?id=" + chatId);
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            setChatHistory(data);
+
+        } else {
+            console.log(response.status + "  : " + data.msg);
+            alert("Something went wrong");
+        }
+
+    }
+
+    function timeFormat(time: string) {
+
+        const formattedTime = new Date(time).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        });
+
+        return formattedTime;
+
+    }
+
+    function connectWebSocket() {
+
+        webSocket.current = new WebSocket("ws://192.168.1.7:3000");
+
+        console.log("Web socket starting...");
+
+        webSocket.current.onopen = () => {
+            console.log("Connected to webSocket");
+        };
+
+        if (webSocket.current) {
+            const data = {
+                type: "register",
+                data: userMobile.toString()
+
+            }
+
+            webSocket.current.send(JSON.stringify(data));
+
+        }
+
+    }
+
+
     return (
-        <SafeAreaView style={style.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-            <View style={style.headerView}>
-                <Entypo name="chevron-with-circle-left" size={36} color="#333" />
-                <Image
-                    source={{ uri: "https://cdn-icons-png.flaticon.com/512/4140/4140073.png" }}
-                    style={style.profilePic}
-                />
-                <View style={style.textContainer}>
-                    <Text style={style.nameText}>Fname And Lname</Text>
-                    <View style={style.statusContainer}>
-                        <View style={style.statusBall}></View>
-                        <Text style={style.statusText}>Online</Text>
-                    </View>
-                </View>
-            </View>
 
-            <View style={style.bodyView}>
-                {/* Sent Message */}
-                <View style={style.sendView}>
-                    <Text style={style.sendMessage}>what is your 20 ?</Text>
-                    <Text style={style.timeText}>10:00 AM</Text>
-                </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+        >
 
-                {/* Received Message */}
-                <View style={style.receiveView}>
-                    <Text style={style.receiveMessage}>Im in my room</Text>
-                    <Text style={style.timeText}>10:02 AM</Text>
-                </View>
-            </View>
+            <SafeAreaView style={styles.container}>
 
-        
-                <View style={style.inputView}>
-                    <TextInput
-                        style={style.input}
-                        placeholder="Type a message..."
+                <View style={styles.headerView}>
+                    <Entypo name="chevron-left" size={24} color="black" onPress={() => {
+                        router.back();
+                    }} />
+                    <Image
+                        source={{ uri: "https://cdn-icons-png.flaticon.com/512/4140/4140073.png" }}
+                        style={styles.profilePic}
                     />
-                    <Pressable style={style.sendButton}>
-                    <Entypo name="paper-plane" size={24} color="#ffffffff" />
+                    <View style={{ flex: 1, gap: 3 }}>
+                        <Text style={styles.nameTxt}>{userName}</Text>
+                        <View style={styles.statusView}>
+                            <View style={styles.statusBall} />
+                            <Text style={styles.statusTxt}>Online</Text>
+                        </View>
+                    </View>
+                    <SimpleLineIcons name="options-vertical" size={16} color="black" />
+                </View>
+
+                <View style={styles.bodyView}>
+
+                    <FlatList
+                        data={chatHistory}
+                        renderItem={({ item }) => {
+
+                            return (
+
+                                <View style={[styles.messageView, { alignItems: userMobile === item.sender ? "flex-start" : "flex-end" }]}>
+                                    <Text style={[styles.message, userMobile === item.sender ? styles.receiveMsg : styles.sendMsg]}>{item.message}</Text>
+                                    <Text style={styles.msgTime}>{timeFormat(item.sent_at)}</Text>
+                                </View>
+
+
+                            );
+
+                        }}
+                    />
+
+
+                </View>
+
+                <View style={styles.inputView}>
+                    <TextInput style={styles.input} placeholder='Enter Message' onChangeText={setText} />
+                    <Pressable style={styles.sendBtn}
+                        onPress={() => {
+                            if (webSocket.current) {
+
+                                const data = {
+                                    type: "chat",
+                                    data: text,
+                                };
+
+                                webSocket.current.send(JSON.stringify(data));
+                            }
+                        }}
+                    >
+
+                        <FontAwesome name="send" size={24} color="white" />
                     </Pressable>
                 </View>
-         </KeyboardAvoidingView>
-        </SafeAreaView>
+
+            </SafeAreaView>
+
+        </KeyboardAvoidingView>
+
+
     );
+
+
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5"
+        backgroundColor: "white"
     },
     headerView: {
         backgroundColor: "white",
-        paddingHorizontal: 15,
-        paddingVertical: 12, 
+        padding: 20,
         flexDirection: "row",
         alignItems: "center",
-        width: "100%",
-        borderBottomWidth: 1,
-        borderBottomColor: "#eee"
+        gap: 15
     },
     profilePic: {
-        width: 45,
-        height: 45,
-        borderRadius: 22.5,
-        marginLeft: 12,
-        marginRight: 12
+        width: 50,
+        height: 50,
+        borderRadius: 50,
     },
-    textContainer: {
-        justifyContent: "center"
+    nameTxt: {
+        color: "black",
+        fontWeight: '500',
+        fontSize: 18
     },
-    nameText: {
-        color: "#222",
-        fontWeight: "600",
-        fontSize: 16
-    },
-    statusContainer: {
+    statusView: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 2
+        gap: 5
     },
-    statusText: {
-        color: "#4CAF50",
+    statusTxt: {
+        color: "#a4a4a4",
         fontSize: 12,
-        fontWeight: "500"
     },
     statusBall: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: "#4CAF50",
-        marginRight: 5
-    },
-    bodyView: {
-        flex: 1,
-        padding: 16,
-    },
-    sendView: {
-        maxWidth: "80%",
-        backgroundColor: "#DCF8C6",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 12,
-        alignSelf: "flex-end",
-        borderTopRightRadius: 2,
-        alignItems: "flex-end",
-        marginBottom: 12, 
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-        elevation: 1
-    },
-    sendMessage: {
-        color: "#333",
-        fontSize: 15,
-        lineHeight: 20,
-        alignSelf: "flex-start"
-    },
-    receiveView: {
-        maxWidth: "80%",
-        backgroundColor: "white",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 12,
-        alignSelf: "flex-start", 
-        borderTopLeftRadius: 2,  
-        alignItems: "flex-end",
-        marginBottom: 12,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-        elevation: 1
-    },
-    receiveMessage: {
-        color: "#333",
-        fontSize: 15,
-        lineHeight: 20,
-        alignSelf: "flex-start"
-    },
-    timeText: {
-        fontSize: 10,
-        color: "#666",
-        marginTop: 4,
-        alignSelf: "flex-end"
+        width: 10,
+        height: 10,
+        borderRadius: 50,
+        backgroundColor: "#64fd85"
     },
 
-    inputView: {
-        backgroundColor: "white",
-        paddingHorizontal: 10,
+    bodyView: {
+        flex: 1,
+        backgroundColor: "#eff3ff",
+        padding: 20,
+    },
+
+    msgTime: {
+        color: "#8f8f8f",
+        fontSize: 12,
+    },
+
+    message: {
+        fontWeight: "600",
         paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: "#eee",
+        paddingHorizontal: 15,
+        borderRadius: 20,
+        maxWidth: "90%",
+    },
+
+    messageView: {
         width: "100%",
+        gap: 5,
+    },
+
+    sendMsg: {
+        backgroundColor: "#005eff",
+        color: "white",
+        borderTopRightRadius: 0,
+    },
+
+    receiveMsg: {
+        backgroundColor: "#ffffff",
+        color: "black",
+        borderTopLeftRadius: 0,
+    },
+
+
+    inputView: {
+        backgroundColor: "#eff3ff",
+        padding: 20,
         flexDirection: "row",
-        alignItems: "center"
+        alignItems: "center",
+        gap: 15,
     },
 
     input: {
+        backgroundColor: "white",
         flex: 1,
-        backgroundColor: "#f0f0f0",
+        height: 50,
         borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
-        color: "#333"
+        paddingHorizontal: 20,
+        paddingVertical: 15
     },
-    sendButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: "#1100ffff",
-        justifyContent: "center",
-        alignItems: "center"
-        
-    }
-
+    sendBtn: {
+        backgroundColor: "#005eff",
+        padding: 10,
+        borderRadius: 50,
+        width: 50,
+        height: 50
+    },
 
 });
