@@ -82,22 +82,16 @@ export default function Chat() {
 
         webSocket.current.onopen = () => {
             console.log("Connected to webSocket");
-
+ 
             if (webSocket.current) {
-
-
                 const data = {
                     type: "register",
                     data: userObj.mobile
                 };
 
                 webSocket.current.send(JSON.stringify(data));
-
-
             }
-
         }
-
 
         webSocket.current.onmessage = (event) => {
 
