@@ -1,6 +1,7 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -11,11 +12,14 @@ export default function Chat() {
     const [chatHistory, setChatHistory] = useState<any[]>([]);
     const [userName, setUserName] = useState("");
 
-    const [text, setText] = useState("");
+    const [loggedUser, setLoggedUser] = useState<any>();
+
+    const [text, settext] = useState("");
 
     const webSocket = useRef<WebSocket>(null);
 
     const router = useRouter();
+
     const params = useLocalSearchParams();
     const chatId = params.chatId;
     const userMobile = params.userMobile;
@@ -61,29 +65,51 @@ export default function Chat() {
 
     }
 
-    function connectWebSocket() {
+    async function connectWebSocket() {
 
-        webSocket.current = new WebSocket("ws://192.168.1.7:3000");
+        const user = await AsyncStorage.getItem("user");
 
-        console.log("Web socket starting...");
+        let userObj: any;
+
+        if (user) {
+            userObj = JSON.parse(user);
+            setLoggedUser(userObj);
+        }
+
+        webSocket.current = new WebSocket("ws://192.168.8.155:3000");
+
+        console.log("Web socket starting...")
 
         webSocket.current.onopen = () => {
             console.log("Connected to webSocket");
-        };
 
-        if (webSocket.current) {
-            const data = {
-                type: "register",
-                data: userMobile.toString()
+            if (webSocket.current) {
+
+
+                const data = {
+                    type: "register",
+                    data: userObj.mobile
+                };
+
+                webSocket.current.send(JSON.stringify(data));
+
 
             }
 
-            webSocket.current.send(JSON.stringify(data));
+        }
+
+
+        webSocket.current.onmessage = (event) => {
+
+            const message = JSON.parse(event.data);
+
+            console.log(message);
+
+            setChatHistory(chatArray => [...chatArray, message]);
 
         }
 
     }
-
 
     return (
 
@@ -135,23 +161,41 @@ export default function Chat() {
                 </View>
 
                 <View style={styles.inputView}>
-                    <TextInput style={styles.input} placeholder='Enter Message' onChangeText={setText} />
-                    <Pressable style={styles.sendBtn}
-                        onPress={() => {
-                            if (webSocket.current) {
 
-                                const data = {
-                                    type: "chat",
-                                    data: text,
-                                };
+                    <TextInput style={styles.input} placeholder='Enter Message' onChangeText={settext} value={text} />
 
-                                webSocket.current.send(JSON.stringify(data));
-                            }
-                        }}
-                    >
+                    <Pressable style={styles.sendBtn} onPress={() => {
 
+                        if (webSocket.current) {
+
+                            const msg = {
+                                message: text,
+                                sent_at: new Date().toString(),
+                                sender: loggedUser.mobile
+                            };
+
+                            setChatHistory( oldChat => [...oldChat, msg] );
+
+                            console.log("receiver: " + userMobile);
+
+                            const data = {
+                                type: "chat",
+                                data: text,
+                                receiver: userMobile,
+                                sender: loggedUser.mobile,
+                                chatId:chatId
+                            };
+
+                            settext("");
+
+                            webSocket.current.send(JSON.stringify(data));
+
+                        }
+
+                    }}>
                         <FontAwesome name="send" size={24} color="white" />
                     </Pressable>
+
                 </View>
 
             </SafeAreaView>
