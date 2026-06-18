@@ -32,6 +32,10 @@ export default function Chat() {
         loadChatHistory();
         connectWebSocket();
 
+        return () => {
+            webSocket.current?.close();
+        }
+
     }, []);
 
     async function loadChatHistory() {
@@ -82,16 +86,22 @@ export default function Chat() {
 
         webSocket.current.onopen = () => {
             console.log("Connected to webSocket");
- 
+
             if (webSocket.current) {
+
+
                 const data = {
                     type: "register",
                     data: userObj.mobile
                 };
 
                 webSocket.current.send(JSON.stringify(data));
+
+
             }
+
         }
+
 
         webSocket.current.onmessage = (event) => {
 
@@ -99,7 +109,7 @@ export default function Chat() {
 
             console.log(message);
 
-            setChatHistory(chatArray => [...chatArray, message]);
+            setChatHistory(chatArray => [ message, ...chatArray]);
 
         }
 
@@ -149,6 +159,8 @@ export default function Chat() {
                             );
 
                         }}
+                        inverted
+                        
                     />
 
 
@@ -168,7 +180,7 @@ export default function Chat() {
                                 sender: loggedUser.mobile
                             };
 
-                            setChatHistory( oldChat => [...oldChat, msg] );
+                            setChatHistory( oldChat => [ msg , ...oldChat] );
 
                             console.log("receiver: " + userMobile);
 

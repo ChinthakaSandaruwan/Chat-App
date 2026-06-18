@@ -1,20 +1,20 @@
 import Octicons from '@expo/vector-icons/Octicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
 
-    const [chatData,setChatData] = useState();
-    const [isRefresh,setIsRefresh] = useState(false);
-    const [userName,setUserName] = useState("");
-    const [userMobile,setUserMobile] = useState("");
+    const [chatData, setChatData] = useState();
+    const [isRefresh, setIsRefresh] = useState(false);
+    const [userName, setUserName] = useState("");
+    const [userMobile, setUserMobile] = useState("");
 
     const router = useRouter();
 
-    async function loadChats(mobile :string) {
+    async function loadChats(mobile: string) {
 
         setIsRefresh(true);
 
@@ -22,7 +22,7 @@ export default function Home() {
 
             const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-            const response = await fetch(apiUrl + "/chat/get-chats?mobile="+mobile);
+            const response = await fetch(apiUrl + "/chat/get-chats?mobile=" + mobile);
 
             const data = await response.json();
             setIsRefresh(false);
@@ -42,34 +42,33 @@ export default function Home() {
 
     }
 
-    useEffect(() => {
 
-        async function getUser(){
+    async function getUser() {
 
-            const userString = await AsyncStorage.getItem("user");
+        const userString = await AsyncStorage.getItem("user");
 
-            if(userString){
+        if (userString) {
 
-                const userObj = JSON.parse(userString);
-                setUserName(userObj.fname);
-                setUserMobile(userObj.mobile);
+            const userObj = JSON.parse(userString);
+            setUserName(userObj.fname);
+            setUserMobile(userObj.mobile);
 
-                loadChats(userObj.mobile);
-
-            }
+            loadChats(userObj.mobile);
 
         }
 
+    }
+
+    useFocusEffect( ()=>{
         getUser();
-  
-    }, []);
+    } );
 
-    function timeFormat(time :string){
+    function timeFormat(time: string) {
 
-        const formattedTime = new Date(time).toLocaleTimeString("en-US",{
-            hour:"numeric",
-            minute:"2-digit",
-            hour12:true,
+        const formattedTime = new Date(time).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
         });
 
         return formattedTime;
@@ -94,15 +93,15 @@ export default function Home() {
                 data={chatData}
                 renderItem={({ item }) => {
                     return (
-                        <Pressable style={styles.chatView} onPress={()=>{
+                        <Pressable style={styles.chatView} onPress={() => {
                             router.push({
-                                pathname:"/chat",
-                                params: { 
-                                    chatId : item.last_message.chat_chat_id,
-                                    userName : item.user.fname +" "+ item.user.lname,
-                                    userMobile : item.user.mobile
+                                pathname: "/chat",
+                                params: {
+                                    chatId: item.last_message.chat_chat_id,
+                                    userName: item.user.fname + " " + item.user.lname,
+                                    userMobile: item.user.mobile
 
-                                 }
+                                }
                             });
                         }}>
                             <Image
@@ -110,7 +109,7 @@ export default function Home() {
                                 style={styles.profilePic}
                             />
                             <View style={{ gap: 3 }}>
-                                <Text style={styles.nameTxt}>{item.user.fname +" "+ item.user.lname}</Text>
+                                <Text style={styles.nameTxt}>{item.user.fname + " " + item.user.lname}</Text>
                                 <Text style={styles.msgTxt}>{item.last_message.message}</Text>
                             </View>
                             <Text style={styles.time}>{timeFormat(item.last_message.sent_at)}</Text>
@@ -119,11 +118,11 @@ export default function Home() {
                 }}
 
                 refreshing={isRefresh}
-                onRefresh={()=>{ 
-                    if(userMobile){
+                onRefresh={() => {
+                    if (userMobile) {
                         loadChats(userMobile);
                     }
-                 }}
+                }}
             />
 
 
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 15,
-        paddingBottom:15,
+        paddingBottom: 15,
     },
     msgTxt: {
         fontSize: 14,
